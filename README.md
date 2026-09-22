@@ -1,144 +1,188 @@
-# Inkwell — now with a real database
+Inkwell
 
-Your app used to store everything (accounts, passwords, library, cart, orders) in
-the browser's memory — so it all vanished on refresh. It's now backed by a real
-**Node.js + Express + MongoDB** API, so:
+Inkwell is a digital library application where users can browse books, borrow or purchase them, manage their wishlist and cart, and view their library and order history.
 
-- Login IDs and passwords are stored for real (passwords are encrypted, never
-  stored as plain text)
-- Everything a reader borrows or buys is saved in **My Library**
-- Every purchase is saved in **Order history**
-- Wishlist and cart persist across logins and page reloads
-- The Admin desk manages real books and real user accounts
+The project originally stored data in the browser, but it now uses a Node.js + Express + MongoDB backend for persistent data storage.
 
-Nothing about the look of your site changed — `index.html`'s design is untouched.
-Only the "brain" (`script.js` + a new `backend/` folder) changed.
+Features
 
-```
+- User registration and login
+- Secure password hashing with bcrypt
+- JWT-based authentication
+- Browse and manage books
+- Borrowed books saved to My Library
+- Persistent wishlist and shopping cart
+- Purchase and order history
+- Admin login and book management
+- Admin user management
+- Book reviews
+- MongoDB database for persistent storage
+- Google Books API for book cover images
+
+Project Structure
+
 inkwell/
 ├── frontend/
-│   ├── index.html      ← your original design, unchanged
-│   └── script.js        ← talks to the API instead of fake in-memory data
-├── backend/              ← the new Node.js/Express/MongoDB server
-└── README.md             ← you are here
-```
+│   ├── index.html
+│   └── script.js
+│
+├── backend/
+│   ├── src/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   └── ...
+│   ├── package.json
+│   └── .env.example
+│
+└── README.md
 
----
+Technologies Used
 
-## 1. Run it on your own computer first
+Frontend
 
-You'll need [Node.js](https://nodejs.org) (v18+) installed, and a MongoDB
-database. Easiest option: a **free MongoDB Atlas cluster** (no install needed).
+- HTML
+- CSS
+- JavaScript
 
-### 1a. Get a free database (MongoDB Atlas)
-1. Go to https://www.mongodb.com/cloud/atlas/register and create a free account.
-2. Create a free "M0" cluster (takes ~2 minutes).
-3. Under **Database Access**, add a database user with a username/password.
-4. Under **Network Access**, click "Allow access from anywhere" (0.0.0.0/0) —
-   fine for a small project like this.
-5. Click **Connect → Drivers**, copy the connection string. It looks like:
-   `mongodb+srv://<user>:<password>@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority`
-   Add `inkwell` as the database name right before the `?`:
-   `mongodb+srv://<user>:<password>@cluster0.xxxxx.mongodb.net/inkwell?retryWrites=true&w=majority`
+Backend
 
-### 1b. Configure and start the backend
-```bash
-cd backend
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
+- JWT
+- bcrypt
+
+API
+
+- Google Books API
+- REST API between the frontend and backend
+
+Running the Project Locally
+
+1. Requirements
+
+Install:
+
+- Node.js 18 or later
+- MongoDB Atlas account or a local MongoDB installation
+
+2. Configure MongoDB
+
+Create a MongoDB Atlas cluster and copy the connection string.
+
+Inside the "backend" folder:
+
 npm install
-cp .env.example .env
-```
-Open `.env` and paste in your MongoDB connection string as `MONGODB_URI`.
-Set `JWT_SECRET` to any long random string (this signs login sessions).
 
-Load the starter book catalog + two demo accounts:
-```bash
+Create a ".env" file based on ".env.example":
+
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_secret_key
+CORS_ORIGIN=*
+
+3. Add Demo Data
+
+Run:
+
 npm run seed
-```
-This creates:
-- **Admin login:** `admin123` / `12345` (use the "Admin Login" tab)
-- **Reader login:** `user123` / `12345` (use the "User Login" tab)
 
-Start the server:
-```bash
+This adds sample books and demo accounts.
+
+Admin
+
+Username: admin123
+Password: 12345
+
+Reader
+
+Username: user123
+Password: 12345
+
+4. Start the Backend
+
 npm start
-```
-You should see `Inkwell API listening on port 5000`.
 
-### 1c. Open the frontend
-Open `frontend/index.html` directly in your browser (or serve it with any
-static file server / the "Live Server" VS Code extension). It's already
-pointed at `http://localhost:5000/api` by default, so it should just work.
+The API will run on:
 
-Try logging in with `admin123` / `12345` or `user123` / `12345`, or create a
-new account from "Create account."
+http://localhost:5000
 
----
+5. Start the Frontend
 
-## 2. Put it online for real (free hosting)
+Open:
 
-Once it works locally, here's the simplest free path: **Render** for the
-backend (and you're already on Atlas for the database), and any static host
-for the frontend.
+frontend/index.html
 
-### 2a. Deploy the backend to Render
-1. Push the `inkwell` folder to a GitHub repo.
-2. Go to https://render.com, sign up, click **New → Web Service**, connect
-   your repo, and set:
-   - **Root directory:** `backend`
-   - **Build command:** `npm install`
-   - **Start command:** `npm start`
-3. Under **Environment**, add the same variables from your `.env`:
-   `MONGODB_URI`, `JWT_SECRET`, and set `CORS_ORIGIN` to your frontend's URL
-   once you know it (step 2b) — you can update this after.
-4. Deploy. Render gives you a URL like `https://inkwell-api.onrender.com`.
-5. Run the seed command once, from your own machine, pointed at the live
-   database (or add a temporary "Shell" run of `npm run seed` in Render's
-   dashboard).
+You can also use the Live Server extension in VS Code.
 
-*Free-tier note: Render's free web services "sleep" after inactivity, so the
-first request after a quiet period can take ~30–50 seconds to wake up. That's
-normal, not a bug.*
+The frontend is configured to communicate with:
 
-### 2b. Deploy the frontend
-Any static host works — easiest is **Netlify** or **Render's Static Site**:
-1. Before deploying, open `frontend/script.js` and change the very first
-   real line of code:
-   ```js
-   const API_BASE = window.INKWELL_API_BASE || 'http://localhost:5000/api';
-   ```
-   to point at your live backend:
-   ```js
-   const API_BASE = window.INKWELL_API_BASE || 'https://inkwell-api.onrender.com/api';
-   ```
-2. Drag the `frontend` folder into https://app.netlify.com/drop (no account
-   needed for a quick test), or connect the repo the same way as the backend.
-3. Once you have your frontend's URL, go back to Render → your backend →
-   Environment → set `CORS_ORIGIN` to that exact URL, and redeploy the
-   backend, so the browser is allowed to call your API.
+http://localhost:5000/api
 
-That's it — you now have a hosted app with a real database.
+Authentication
 
----
+User passwords are not stored as plain text.
 
-## What changed under the hood
+Passwords are hashed using bcrypt, and login sessions use JWT tokens.
 
-- **Auth:** JWT tokens (30-day sessions), passwords hashed with bcrypt —
-  never stored or shown in plain text (the admin "Manage Users" table used
-  to reveal raw passwords; it no longer can, by design — use Edit to set a
-  new one instead).
-- **Data model:** Books, Users (with embedded library/wishlist/cart),
-  Orders, and Reviews are separate MongoDB collections — see
-  `backend/src/models/`.
-- **API:** documented by the route files in `backend/src/routes/` — auth,
-  books, library, wishlist, cart, orders, reviews, users, stats.
-- Book cover art is still auto-fetched from the free Google Books API,
-  same as before.
+This allows users to log in again without losing their account data.
 
-## Honest limitations
+Database
 
-- Checkout is still a **mock payment form** — no real card processor is
-  connected. Wiring up real payments (Stripe, etc.) is a separate step I'm
-  happy to help with if you want it.
-- This is a solid learning/small-project setup, not a hardened
-  production system (rate limiting, email verification, and password-reset
-  flows aren't included).
+MongoDB stores the application's persistent data.
+
+The main collections include:
+
+- Users
+- Books
+- Orders
+- Reviews
+
+User-related data such as library items, wishlist items, and cart items are associated with the user's account.
+
+Admin Features
+
+The admin section allows authorized administrators to:
+
+- Add books
+- Edit books
+- Remove books
+- View registered users
+- Manage user accounts
+- View application statistics
+
+Passwords are never displayed in the admin panel.
+
+Deployment
+
+The application can be deployed using:
+
+- MongoDB Atlas — database
+- Render — backend
+- Netlify or Render Static Site — frontend
+
+For deployment, update the frontend API URL to point to the deployed backend.
+
+Example:
+
+const API_BASE =
+  window.INKWELL_API_BASE ||
+  'https://your-backend-url.onrender.com/api';
+
+Then configure the backend's "CORS_ORIGIN" with the deployed frontend URL.
+
+Current Limitations
+
+This project is currently intended as a learning/small-project application.
+
+- Checkout uses a mock payment form.
+- No real payment gateway is connected.
+- Email verification is not implemented.
+- Password reset is not implemented.
+- Rate limiting is not currently implemented.
+
+Real payment integration, email verification, password recovery, and additional security features can be added in future versions.
+
+License
+
+This project is for educational and development purposes.
