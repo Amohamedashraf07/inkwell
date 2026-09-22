@@ -185,9 +185,8 @@ same as before.
 Honest limitations
 
 Checkout is still a mock payment form — no real card processor is
-connected. Wiring up real payments (Stripe, etc.) is a separate step I'm
-happy to help with if you want it.
+connected. 
 
 This is a solid learning/small-project setup, not a hardened
 production system (rate limiting, email verification, and password-reset
-flows aren't included). I want to put his content on my github . Give a crt one it's look like ai asking to me
+flows aren't included). 
